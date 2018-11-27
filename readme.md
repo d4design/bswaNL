@@ -15,21 +15,21 @@ npm install
 ```
 
 ## Development
-To start the noise logger
-
-```sh
-node start_meas.js
-```
+All functions are stored in library.js and strung together with the following:
 
 To start logging noise levels of the Custom Measures to data.csv the command
-
 ```sh
-node log_cm.js
+node logCM.js
 ```
-To stop the noise logger
 
+To check if the SLM is running or not:
 ```sh
-node stop_meas.js
+node checkState.js
+```
+
+To get the Statistical Measure settings:
+```sh
+node getStats.js
 ```
 
 
