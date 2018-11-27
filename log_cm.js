@@ -48,51 +48,106 @@ function processHeaders(data) {
     dataString += String.fromCharCode(data[i]);
   }
 
-  var dataArray = dataString.split(',');
+//convert the data string to an array to make it easier to address each parameter.
+  var dataArray = dataString.split(',').map(Number);
 
-  var headers = [dataArray[0],
-  dataArray[1],
-  dataArray[2],
-  dataArray[4],
-  dataArray[5],
-  dataArray[6],
-  dataArray[8],
-  dataArray[9],
-  dataArray[10],
-  dataArray[12],
-  dataArray[13],
-  dataArray[14],
-  dataArray[16],
-  dataArray[17],
-  dataArray[18],
-  dataArray[20],
-  dataArray[21],
-  dataArray[22],
-  dataArray[24],
-  dataArray[25],
-  dataArray[26],
-  dataArray[28],
-  dataArray[29],
-  dataArray[30],
-  dataArray[32],
-  dataArray[33],
-  dataArray[34],
-  dataArray[36],
-  dataArray[37],
-  dataArray[38],
-  dataArray[40],
-  dataArray[41],
-  dataArray[42],
-  dataArray[44],
-  dataArray[45],
-  dataArray[46],
-  dataArray[48],
-  dataArray[49],
-  dataArray[50],
-  dataArray[52],
-  dataArray[53],
-  dataArray[54]];
+//dataArray is 14 groups of 4 numbers: p1,p2,p3,data
+//p1,p2,p3 indicate what the following data is, which is set within the sound meter
+//p1 = frequency weighting (e.g. A), p2 = Detector (e.g. Fast), p3 = descriptor (e.g. eq)
+//once translated, p1,p2,p3 will become the header row for the csv file.
+//this code splits out each header group so they can be tranlated.
+  var headers = [[dataArray[0],dataArray[1],dataArray[2]],
+    [dataArray[4],dataArray[5],dataArray[6]],
+    [dataArray[8],dataArray[9],dataArray[10]],
+    [dataArray[12],dataArray[13],dataArray[14]],
+    [dataArray[16],dataArray[17],dataArray[18]],
+    [dataArray[20],dataArray[21],dataArray[22]],
+    [dataArray[24],dataArray[25],dataArray[26]],
+    [dataArray[28],dataArray[29],dataArray[30]],
+    [dataArray[32],dataArray[33],dataArray[34]],
+    [dataArray[36],dataArray[37],dataArray[38]],
+    [dataArray[40],dataArray[41],dataArray[42]],
+    [dataArray[44],dataArray[45],dataArray[46]],
+    [dataArray[48],dataArray[49],dataArray[50]],
+    [dataArray[52],dataArray[53],dataArray[54]]];
 
+//Translate the header parameters to column headers
+console.log(headers[1][0]);
+
+//translate frequency weightings
+for (i = 0; i < headers.length; i++) {
+switch (headers[i][0]) {
+  case 0:
+    headers[i][0] = 'LA';
+    break;
+  case 1:
+    headers[i][0] = 'LB';
+    break;
+  case 2:
+    headers[i][0] = 'LC';
+    break;
+  case 3:
+    headers[i][0] = 'LZ';
+    break;
+  default:
+   headers[i][0] = 'Error';
+}
+}
+
+//translate detector settings
+for (i = 0; i < headers.length; i++) {
+switch (headers[i][1]) {
+  case 0:
+    headers[i][1] = 'F';
+    break;
+  case 1:
+    headers[i][1] = 'S';
+    break;
+  case 2:
+    headers[i][1] = 'I';
+    break;
+  default:
+   headers[i][1] = 'Error';
+}
+}
+
+//create headers
+for (i = 0; i < headers.length; i++) {
+   if (headers[i][2] >= 8) {
+      headers[i] = 'LN' + (headers[i][2] - 7);
+    } else {
+      switch (headers[i][2]) {
+        case 0: //SPL
+          headers[i] =  headers[i][0] + headers[i][1];
+          break;
+        case 1: //SD
+          headers[i] =  headers[i][0] + headers[i][1] + 'sd';
+          break;
+        case 2: //SEL
+          headers[i] =  headers[i][0] + 'sel';
+          break;
+        case 3: //E
+          headers[i] = headers[i][0] + 'e';
+          break;
+        case 4: //Max
+          headers[i] =  headers[i][0] + headers[i][1] + 'max';
+          break;
+        case 5: //Min
+          headers[i] =  headers[i][0] + headers[i][1] + 'min';
+          break;
+        case 6: //Peak
+          headers[i] =  headers[i][0] + 'peak';
+          break;
+        case 7: //EQ
+          headers[i] =  headers[i][0] + 'eq';
+          break;
+        default:
+          headers[i] = 'error';
+      }
+    }
+}
+
+//The 14 noise levels are put into an array:
   var noiseLevels = [dataArray[3],dataArray[7],dataArray[11],dataArray[15],dataArray[19],dataArray[23],dataArray[27],dataArray[31],dataArray[35],dataArray[39],dataArray[43],dataArray[47],dataArray[51],dataArray[55]];
 
   switch (command) {
@@ -101,7 +156,7 @@ function processHeaders(data) {
       let csvHeaders = '';
       csvHeaders = headers.toString();
       console.log(csvHeaders);
-      csvHeaders = `${new Date().toISOString()},${csvHeaders}\n`;
+      csvHeaders = `Time,${csvHeaders}\n`;
       fs.appendFile('data.csv', csvHeaders, (err) => {
           if (err) throw err;
           console.log('Headers saved successfully')
@@ -137,7 +192,7 @@ function processData(data) {
     dataString += String.fromCharCode(data[i]);
   }
 
-  var dataArray = dataString.split(',');
+  var dataArray = dataString.split(',').map(Number);
 
   var noiseLevels = [dataArray[3],dataArray[7],dataArray[11],dataArray[15],dataArray[19],dataArray[23],dataArray[27],dataArray[31],dataArray[35],dataArray[39],dataArray[43],dataArray[47],dataArray[51],dataArray[55]];
 
