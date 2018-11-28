@@ -1,5 +1,7 @@
-var port = undefined;
+var port;
+var SerialPort = require('serialport');
 var fs = require('fs');
+var slmState;
 const ATTR_RESPONSE = 0x41;
 const START_MEAS = Buffer.from([0x02, 0x01, 0x43, 0x53, 0x54, 0x41, 0x31, 0x03, 0x34, 0x0D, 0x0A]);
 const STOP_MEAS = Buffer.from([0x02, 0x01, 0x43, 0x53, 0x54, 0x41, 0x30, 0x03, 0x35, 0x0D, 0x0A]);
@@ -11,8 +13,6 @@ module.exports = {
 
    initialize: function() {
      console.log('Initializing...');
-     var SerialPort = require('serialport');
-     var fs = require('fs');
 
 
      SerialPort.list(function (err, ports) {
@@ -145,10 +145,10 @@ module.exports = {
         }
 
         var dataArray = dataString.split(',').map(Number);
-
-        console.log(dataArray);
-
-        port.close();
+        slmState = undefined;
+        slmState = dataArray[0];
+        console.log('SLM State: ' + slmState);
+        return port.close();
       }
 
       let isReading = false;
@@ -185,6 +185,7 @@ module.exports = {
           return console.log('Error on write: ', err.message);
         }
         console.log('SLM started.');
+        return port.close();
       });
    },
 
@@ -195,6 +196,7 @@ module.exports = {
           return console.log('Error on write: ', err.message);
         }
         console.log('SLM stopped.');
+        return port.close();
       });
    },
 
@@ -242,8 +244,6 @@ module.exports = {
           [dataArray[52],dataArray[53],dataArray[54]]];
 
       //Translate the header parameters to column headers
-      console.log(headers[1][0]);
-
       //translate frequency weightings
       for (i = 0; i < headers.length; i++) {
       switch (headers[i][0]) {
