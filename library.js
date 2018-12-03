@@ -11,7 +11,7 @@ const QUERY_STATS = Buffer.from([0x02, 0x01, 0x43, 0x53, 0x54, 0x53, 0x3F, 0x03,
 
 module.exports = {
 
-   initialize: function() {
+   initialize: function(callback) {
      console.log('Initializing...');
 
 
@@ -30,15 +30,17 @@ module.exports = {
 
      port.on('open', function() {
        console.log('Port is open.')
+       callback();
      });
 
      port.on('error', function(err) {
        console.log('Error: ', err.message);
+       callback(err);
      });
 
    },
 
-   getStats: function() {
+   getStats: function(callback) {
       console.log('getting statistical settings');
       let dataBuffer = [];
       function processStats(data) {
@@ -124,7 +126,7 @@ module.exports = {
       });
    },
 
-   checkState: function() {
+   checkState: function(callback) {
       console.log('Checking SLM state');
       let dataBuffer = [];
       function processData(data) {
@@ -148,7 +150,8 @@ module.exports = {
         slmState = undefined;
         slmState = dataArray[0];
         console.log('SLM State: ' + slmState);
-        return port.close();
+        port.close(); //TODO: maybe dont have this?
+        return slsState;
       }
 
       let isReading = false;
@@ -157,9 +160,13 @@ module.exports = {
           let b = data[i];
           if (isReading) {
             if (b === 0x0A && dataBuffer[dataBuffer.length-1] === 0x0D && dataBuffer[dataBuffer.length-3] === 0x03) { //Check for ending signal
-              processData(dataBuffer);
+              const slsState = processData(dataBuffer);
               isReading = false;
               dataBuffer = [];
+              //TODO: you might get a problem where this gets called over and over.
+              //if so you'll probably have to move the data event handler out somewhere else
+              //and do some pretty major refactoring
+              callback(null, slsState);
             } else {
               dataBuffer.push(b);
             }
@@ -178,14 +185,16 @@ module.exports = {
       });
    },
 
-   start: function() {
+   start: function(callback) {
       console.log('Starting SLM');
       port.write(START_MEAS, function(err) {
         if (err) {
+          callback(err);
           return console.log('Error on write: ', err.message);
         }
         console.log('SLM started.');
-        return port.close();
+        port.close();
+        return callback();
       });
    },
 
