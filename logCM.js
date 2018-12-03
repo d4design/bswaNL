@@ -1,19 +1,24 @@
+const async = require('async');
 const library = require('./library.js');
-var delay1 = 2000; //5 second
-var delay2 = 4000; //5 second
 
-  library.initialize();
-  library.checkState();
-
-  setTimeout(function() {
-    library.initialize();
-    library.start();
-  }, delay1);
-
-  setTimeout(function() {
-    library.initialize();
-    library.logCM();
-  }, delay2);
+async.waterfall([
+  library.initialize,
+  library.checkState,
+  (slmState, callback) => {
+    console.log('slmState', slmState);
+    callback();
+  },
+  library.initialize, //TODO: refactor and dont close the connection in every function so you dont have to do this (hard)
+  library.start,
+  library.initialize, //TODO: refactor and dont close the connection in every function so you dont have to do this (hard)
+  library.logCM
+], (err) => {
+  if (err) {
+    console.log('Something errored', err);
+    return;
+  }
+  console.log('Done everything successfuly');
+})
 
 
 

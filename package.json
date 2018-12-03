@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "async": "^2.6.1",
     "serialport": "^5.0.0"
   }
 }
