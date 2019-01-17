@@ -3,11 +3,17 @@ const library = require('./library.js');
 
 async.waterfall([
   library.initialize,
-  library.start
+  library.getCustomMeasures,
+  (customMeasures, callback) => {
+    console.log(customMeasures);
+    callback();
+  }
+
 ], (err) => {
   if (err) {
     console.log('Something errored', err);
     return;
   }
   console.log('Done everything successfuly');
+  library.portClose();
 })

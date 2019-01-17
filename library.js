@@ -2,18 +2,37 @@ var port;
 var SerialPort = require('serialport');
 var fs = require('fs');
 var slmState;
+var statSettings;
+var customMeasures;
+const COM_PORT = 'COM4';
 const ATTR_RESPONSE = 0x41;
 const START_MEAS = Buffer.from([0x02, 0x01, 0x43, 0x53, 0x54, 0x41, 0x31, 0x03, 0x34, 0x0D, 0x0A]);
 const STOP_MEAS = Buffer.from([0x02, 0x01, 0x43, 0x53, 0x54, 0x41, 0x30, 0x03, 0x35, 0x0D, 0x0A]);
 const QUERY_STATE = Buffer.from([0x02, 0x01, 0x43, 0x53, 0x54, 0x41, 0x3F, 0x03, 0x3A, 0x0D, 0x0A]);
 const QUERY_CUSTOM_MEASURE_DATA = Buffer.from([0x02, 0x01, 0x43, 0x44, 0x43, 0x55, 0x33, 0x20, 0x3F, 0x03, 0x3D, 0x0D, 0x0A]);
 const QUERY_STATS = Buffer.from([0x02, 0x01, 0x43, 0x53, 0x54, 0x53, 0x3F, 0x03, 0x28, 0x0D, 0x0A]);
+const QUERY_CUSTOM_MEASURE = [[0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x30, 0x31, 0x20, 0x3F, 0x03, 0x18, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x30, 0x32, 0x20, 0x3F, 0x03, 0x1B, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x30, 0x33, 0x20, 0x3F, 0x03, 0x1A, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x30, 0x34, 0x20, 0x3F, 0x03, 0x1D, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x30, 0x35, 0x20, 0x3F, 0x03, 0x1C, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x30, 0x36, 0x20, 0x3F, 0x03, 0x1F, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x30, 0x37, 0x20, 0x3F, 0x03, 0x1E, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x30, 0x38, 0x20, 0x3F, 0x03, 0x11, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x30, 0x39, 0x20, 0x3F, 0x03, 0x10, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x31, 0x30, 0x20, 0x3F, 0x03, 0x18, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x31, 0x31, 0x20, 0x3F, 0x03, 0x19, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x31, 0x32, 0x20, 0x3F, 0x03, 0x1A, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x31, 0x33, 0x20, 0x3F, 0x03, 0x1B, 0x0D, 0x0A],
+                              [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x31, 0x34, 0x20, 0x3F, 0x03, 0x1C, 0x0D, 0x0A]];
 
 module.exports = {
 
-   initialize: function(callback) {
+  initialize: function(callback) {
+    // initialize: function(callback) {
      console.log('Initializing...');
 
+// setTimeout(function() {
 
      SerialPort.list(function (err, ports) {
        if (err) throw err;
@@ -21,15 +40,15 @@ module.exports = {
        ports.forEach(function(port) {
          console.log(`${port.comName} ${port.pnpId} ${port.manufacturer}`);
        });
-       console.log('\n\n');
+       console.log('\n');
      });
 
-     port = new SerialPort('COM4', {
+     port = new SerialPort(COM_PORT, {
        baudRate: 9600
      });
 
      port.on('open', function() {
-       console.log('Port is open.')
+       console.log(COM_PORT,'is open.');
        callback();
      });
 
@@ -37,6 +56,8 @@ module.exports = {
        console.log('Error: ', err.message);
        callback(err);
      });
+
+   // }, 1000);
 
    },
 
@@ -60,43 +81,43 @@ module.exports = {
           statsString += String.fromCharCode(data[i]);
         }
 
-        var statsArray = statsString.split(',').map(Number);
+        statSettings = statsString.split(',').map(Number);
 
         //translate frequency weightings
-        switch (statsArray[0]) {
+        switch (statSettings[0]) {
           case 0:
-            statsArray[0] = 'LA';
+            statSettings[0] = 'LA';
             break;
           case 1:
-            statsArray[0] = 'LB';
+            statSettings[0] = 'LB';
             break;
           case 2:
-            statsArray[0] = 'LC';
+            statSettings[0] = 'LC';
             break;
           case 3:
-            statsArray[0] = 'LZ';
+            statSettings[0] = 'LZ';
             break;
           default:
-            statsArray[0] = 'Error';
+            statSettings[0] = 'Error';
         }
 
         //translate detector settings
-        switch (statsArray[1]) {
+        switch (statSettings[1]) {
           case 0:
-            statsArray[1] = 'F';
+            statSettings[1] = 'F';
             break;
           case 1:
-            statsArray[1] = 'S';
+            statSettings[1] = 'S';
             break;
           case 2:
-            statsArray[1] = 'I';
+            statSettings[1] = 'I';
             break;
           default:
-            statsArray[1] = 'Error';
+            statSettings[1] = 'Error';
         }
 
-      console.log(statsArray);
-      port.close()
+        // console.log(statsArray);
+        return statSettings;
       }
 
       let isReading = false;
@@ -108,6 +129,7 @@ module.exports = {
               processStats(dataBuffer);
               isReading = false;
               dataBuffer = [];
+              callback(null, statSettings);
             } else {
               dataBuffer.push(b);
             }
@@ -124,6 +146,479 @@ module.exports = {
         }
         console.log('Querying data');
       });
+   },
+
+   getCustomMeasures: function(callback) {
+      console.log('getting custom settings');
+      let dataBuffer = [];
+      customMeasures = [];
+
+      function processData(data) {
+        //Remove device id
+        data.splice(0, 1);
+        //Remove the CR
+        data.splice(data.length-1, 1);
+        //Remove the BCC
+        data.splice(data.length-1, 1);
+        // Remove the ETX
+        data.splice(data.length-1, 1);
+        // Get the ATTR ATTR_RESPONSE
+        const command = data.splice(0, 1)[0];  //should be 0x41 which is the Response Block at start of Response data
+
+        let dataString = '';
+        for (var i = 0; i < data.length; i++) {
+          dataString += String.fromCharCode(data[i]);
+        }
+        thisSetting = dataString.split(',').map(Number);
+        customMeasures.push(thisSetting);
+      }
+
+      function processStats(data) {
+        //Remove device id
+        data.splice(0, 1);
+        //Remove the CR
+        data.splice(data.length-1, 1);
+        //Remove the BCC
+        data.splice(data.length-1, 1);
+        // Remove the ETX
+        data.splice(data.length-1, 1);
+        // Get the ATTR ATTR_RESPONSE
+        const command = data.splice(0, 1)[0];  //should be 0x41 which is the Response Block at start of Response data
+
+        let statsString = '';
+        for (var i = 0; i < data.length; i++) {
+          statsString += String.fromCharCode(data[i]);
+        }
+
+        statSettings = statsString.split(',').map(Number);
+        //translate frequency weightings
+        switch (statSettings[0]) {
+          case 0:
+            statSettings[0] = 'LA';
+            break;
+          case 1:
+            statSettings[0] = 'LB';
+            break;
+          case 2:
+            statSettings[0] = 'LC';
+            break;
+          case 3:
+            statSettings[0] = 'LZ';
+            break;
+          default:
+            statSettings[0] = 'Error';
+        }
+
+        //translate detector settings
+        switch (statSettings[1]) {
+          case 0:
+            statSettings[1] = 'F';
+            break;
+          case 1:
+            statSettings[1] = 'S';
+            break;
+          case 2:
+            statSettings[1] = 'I';
+            break;
+          default:
+            statSettings[1] = 'Error';
+        }
+      }
+
+
+      function translateSettings() {
+      //translate frequency weightings
+      for (i = 0; i < customMeasures.length; i++) {
+      switch (customMeasures[i][1]) {
+        case 0:
+          customMeasures[i][1] = 'LA';
+          break;
+        case 1:
+          customMeasures[i][1] = 'LB';
+          break;
+        case 2:
+          customMeasures[i][1] = 'LC';
+          break;
+        case 3:
+          customMeasures[i][1] = 'LZ';
+          break;
+        default:
+         customMeasures[i][1] = 'Error';
+      }
+      }
+
+      // translate detector settings
+      for (i = 0; i < customMeasures.length; i++) {
+      switch (customMeasures[i][2]) {
+        case 0:
+          customMeasures[i][2] = 'F';
+          break;
+        case 1:
+          customMeasures[i][2] = 'S';
+          break;
+        case 2:
+          customMeasures[i][2] = 'I';
+          break;
+        default:
+         customMeasures[i][2] = 'Error';
+      }
+      }
+      //create headers
+      for (i = 0; i < customMeasures.length; i++) {
+         if (customMeasures[i][3] >= 8) {
+            customMeasures[i] = statSettings[0] + statSettings[1] + (statSettings[customMeasures[i][3] - 6]);
+          } else {
+            switch (customMeasures[i][3]) {
+              case 0: //SPL
+                customMeasures[i] =  customMeasures[i][1] + customMeasures[i][2];
+                break;
+              case 1: //SD
+                customMeasures[i] =  customMeasures[i][1] + customMeasures[i][2] + 'sd';
+                break;
+              case 2: //SEL
+                customMeasures[i] =  customMeasures[i][1] + 'sel';
+                break;
+              case 3: //E
+                customMeasures[i] = customMeasures[i][1] + 'e';
+                break;
+              case 4: //Max
+                customMeasures[i] =  customMeasures[i][1] + customMeasures[i][2] + 'max';
+                break;
+              case 5: //Min
+                customMeasures[i] =  customMeasures[i][1] + customMeasures[i][2] + 'min';
+                break;
+              case 6: //Peak
+                customMeasures[i] =  customMeasures[i][1] + 'peak';
+                break;
+              case 7: //EQ
+                customMeasures[i] =  customMeasures[i][1] + 'eq';
+                break;
+              default:
+                customMeasures[i] = 'error';
+            }
+          }
+        }
+      }
+
+      let isReading = false;
+      let thisSettingNumber = 0;
+      let gotStats = false
+      port.on('data', function (data) {
+        for (var i = 0; i < data.length; i++) {
+          let b = data[i];
+          if (isReading) {
+            if (b === 0x0A && dataBuffer[dataBuffer.length-1] === 0x0D && dataBuffer[dataBuffer.length-3] === 0x03) { //Check for ending signal
+              if (gotStats === false) {
+                processStats(dataBuffer);
+                isReading = false;
+                dataBuffer = [];
+                gotStats = true;
+                nextQuery();
+              } else {
+              processData(dataBuffer);
+              isReading = false;
+              dataBuffer = [];
+              thisSettingNumber++;
+              if (thisSettingNumber > 13) {
+                translateSettings();
+                callback(null, customMeasures);
+              } else {
+              nextQuery();
+            }
+          }
+        } else {
+              dataBuffer.push(b);
+            }
+          } else if (b === 0x02) {
+            isReading = true;
+          }
+        }
+
+      });
+
+      port.write(Buffer.from(QUERY_STATS), function(err) {
+        if (err) {
+          return console.log('Error on write: ', err.message);
+        }
+        console.log('Querying Statistical Settings');
+      });
+
+      function nextQuery() {
+        port.write(Buffer.from(QUERY_CUSTOM_MEASURE[thisSettingNumber]), function(err) {
+          if (err) {
+            return console.log('Error on write: ', err.message);
+          }
+          console.log('Querying Custom Measure',thisSettingNumber+1);
+        });
+
+    };
+   },
+
+   setCustomMeasures: function(callback) {
+
+     //inputs to SLM
+           var customMeasureInput =  [{freq: "A", detector: "F", mode: "SPL"}, //group1
+                                     {freq: "B", detector: "S", mode: "sd"}, //group2
+                                     {freq: "C", detector: "I", mode: "sel"}, //group3
+                                     {freq: "Z", detector: "F", mode: "e"}, //group4
+                                     {freq: "A", detector: "S", mode: "max"}, //group5
+                                     {freq: "B", detector: "I", mode: "min"}, //group6
+                                     {freq: "C", detector: "F", mode: "peak"}, //group7
+                                     {freq: "Z", detector: "S", mode: "eq"}, //group8
+                                     {freq: "A", detector: "I", mode: "LN1"}, //group9
+                                     {freq: "B", detector: "F", mode: "LN2"}, //group10
+                                     {freq: "C", detector: "S", mode: "LN3"}, //group11
+                                     {freq: "Z", detector: "I", mode: "LN4"}, //group12
+                                     {freq: "A", detector: "F", mode: "LN5"}, //group13
+                                     {freq: "B", detector: "S", mode: "LN6"} //group14
+                                   ];
+
+      console.log('Setting Custom Settings');
+      let dataBuffer = [];
+      let thisGroupNumber = 0;
+      var group_p1;
+      var group_p2;
+      var freq;
+      var detector;
+      var mode_p1;
+      var mode_p2;
+
+
+      function processData(data) {
+        //Remove device id
+        data.splice(0, 1);
+        //Remove the CR
+        data.splice(data.length-1, 1);
+        //Remove the BCC
+        data.splice(data.length-1, 1);
+        // Remove the ETX
+        data.splice(data.length-1, 1);
+        // Get the ATTR ATTR_RESPONSE
+        const command = data.splice(0, 1)[0];  //should be 0x41 which is the Response Block at start of Response data
+
+        let dataString = '';
+        for (var i = 0; i < data.length; i++) {
+          dataString += String.fromCharCode(data[i]);
+        }
+        dataArray = dataString.split(',').map(Number);
+        // console.log(dataArray);
+      }
+
+      //create command based on input settings
+      function createCommand () {
+
+      switch (thisGroupNumber) {
+        case 0:
+          var group_p1 = 0x30;
+          var group_p2 = 0x31;
+          break;
+        case 1:
+          var group_p1 = 0x30;
+          var group_p2 = 0x32;
+          break;
+        case 2:
+          var group_p1 = 0x30;
+          var group_p2 = 0x33;
+          break;
+        case 3:
+          var group_p1 = 0x30;
+          var group_p2 = 0x34;
+          break;
+        case 4:
+          var group_p1 = 0x30;
+          var group_p2 = 0x35;
+          break;
+        case 5:
+          var group_p1 = 0x30;
+          var group_p2 = 0x36;
+          break;
+        case 6:
+          var group_p1 = 0x30;
+          var group_p2 = 0x37;
+          break;
+        case 7:
+          var group_p1 = 0x30;
+          var group_p2 = 0x38;
+          break;
+        case 8:
+          var group_p1 = 0x30;
+          var group_p2 = 0x39;
+          break;
+        case 9:
+          var group_p1 = 0x31;
+          var group_p2 = 0x30;
+          break;
+        case 10:
+          var group_p1 = 0x31;
+          var group_p2 = 0x31;
+          break;
+        case 11:
+          var group_p1 = 0x31;
+          var group_p2 = 0x32;
+          break;
+        case 12:
+          var group_p1 = 0x31;
+          var group_p2 = 0x33;
+          break;
+        case 13:
+          var group_p1 = 0x31;
+          var group_p2 = 0x34;
+          break;
+        default:
+          return console.log('Error');
+      }
+
+
+      switch (customMeasureInput[thisGroupNumber].freq) {
+        case 'A':
+          var freq = 0x30;
+          break;
+        case 'B':
+          var freq = 0x31;
+          break;
+        case 'C':
+          var freq = 0x32;
+          break;
+        case 'Z':
+          var freq = 0x33;
+          break;
+        default:
+          var freq = 0x30;
+      }
+
+      switch (customMeasureInput[thisGroupNumber].detector) {
+        case 'F':
+          var detector = 0x30;
+          break;
+        case 'S':
+          var detector = 0x31;
+          break;
+        case 'I':
+          var detector = 0x32;
+          break;
+        default:
+          var detector = 0x30;
+      }
+
+      switch (customMeasureInput[thisGroupNumber].mode) {
+        case 'SPL':
+          var mode_p1 = 0x30;
+          var mode_p2 = 0x30;
+          break;
+        case 'sd':
+          var mode_p1 = 0x30;
+          var mode_p2 = 0x31;
+          break;
+        case 'sel':
+          var mode_p1 = 0x30;
+          var mode_p2 = 0x32;
+          break;
+        case 'e':
+          var mode_p1 = 0x30;
+          var mode_p2 = 0x33;
+          break;
+        case 'max':
+          var mode_p1 = 0x30;
+          var mode_p2 = 0x34;
+          break;
+        case 'min':
+          var mode_p1 = 0x30;
+          var mode_p2 = 0x35;
+          break;
+        case 'peak':
+          var mode_p1 = 0x30;
+          var mode_p2 = 0x36;
+          break;
+        case 'eq':
+          var mode_p1 = 0x30;
+          var mode_p2 = 0x37;
+          break;
+        case 'LN1':
+          var mode_p1 = 0x30;
+          var mode_p2 = 0x38;
+          break;
+        case 'LN2':
+          var mode_p1 = 0x30;
+          var mode_p2 = 0x39;
+          break;
+        case 'LN3':
+          var mode_p1 = 0x31;
+          var mode_p2 = 0x30;
+          break;
+        case 'LN4':
+          var mode_p1 = 0x31;
+          var mode_p2 = 0x31;
+          break;
+        case 'LN5':
+          var mode_p1 = 0x31;
+          var mode_p2 = 0x32;
+          break;
+        case 'LN6':
+          var mode_p1 = 0x31;
+          var mode_p2 = 0x33;
+          break;
+        case 'LN7':
+          var mode_p1 = 0x31;
+          var mode_p2 = 0x34;
+          break;
+        case 'LN8':
+          var mode_p1 = 0x31;
+          var mode_p2 = 0x35;
+          break;
+        case 'LN9':
+          var mode_p1 = 0x31;
+          var mode_p2 = 0x36;
+          break;
+        case 'LN10':
+          var mode_p1 = 0x31;
+          var mode_p2 = 0x37;
+          break;
+        default:
+          var mode_p1 = 0x30;
+          var mode_p2 = 0x30;
+      }
+
+      var SET_CUSTOM_MEASURE = [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, group_p1, group_p2, 0x20, freq, 0x20, detector, 0x20, mode_p1, mode_p2, 0x03, 0x00, 0x0D, 0x0A];
+
+      port.write(SET_CUSTOM_MEASURE, function(err) {
+        if (err) {
+          callback(err);
+          return console.log('Error on write: ', err.message);
+        }
+        console.log('Setting Custom Measure',thisGroupNumber+1);
+        console.log(customMeasureInput[thisGroupNumber]);
+      })
+
+    }
+
+    let isReading = false;
+    port.on('data', function (data) {
+      for (var i = 0; i < data.length; i++) {
+        let b = data[i];
+        if (isReading) {
+          if (b === 0x0A && dataBuffer[dataBuffer.length-1] === 0x0D && dataBuffer[dataBuffer.length-3] === 0x03) { //Check for ending signal
+            processData(dataBuffer);
+            isReading = false;
+            dataBuffer = [];
+            thisGroupNumber++;
+            if (thisGroupNumber > 13) {
+              console.log('Settings updated')
+              callback(null, null);
+            } else {
+            createCommand();
+          }
+      } else {
+            dataBuffer.push(b);
+          }
+        } else if (b === 0x02) {
+          isReading = true;
+        }
+      }
+
+    });
+
+  createCommand();
+
    },
 
    checkState: function(callback) {
@@ -149,9 +644,9 @@ module.exports = {
         var dataArray = dataString.split(',').map(Number);
         slmState = undefined;
         slmState = dataArray[0];
-        console.log('SLM State: ' + slmState);
-        port.close(); //TODO: maybe dont have this?
-        return slsState;
+        // console.log('SLM State: ' + slmState);
+        // port.close(); //TODO: maybe dont have this?
+        return slmState;
       }
 
       let isReading = false;
@@ -160,13 +655,13 @@ module.exports = {
           let b = data[i];
           if (isReading) {
             if (b === 0x0A && dataBuffer[dataBuffer.length-1] === 0x0D && dataBuffer[dataBuffer.length-3] === 0x03) { //Check for ending signal
-              const slsState = processData(dataBuffer);
+              const slmState = processData(dataBuffer);
               isReading = false;
               dataBuffer = [];
               //TODO: you might get a problem where this gets called over and over.
               //if so you'll probably have to move the data event handler out somewhere else
               //and do some pretty major refactoring
-              callback(null, slsState);
+              callback(null, slmState);
             } else {
               dataBuffer.push(b);
             }
@@ -181,7 +676,7 @@ module.exports = {
         if (err) {
           return console.log('Error on write: ', err.message);
         }
-        console.log('Querying data');
+        console.log('Communicating with SLM');
       });
    },
 
@@ -193,23 +688,37 @@ module.exports = {
           return console.log('Error on write: ', err.message);
         }
         console.log('SLM started.');
+        // port.close();
+        return callback();
+      });
+   },
+
+   stop: function(callback) {
+      console.log('Stopping SLM');
+      port.write(STOP_MEAS, function(err) {
+        if (err) {
+          callback(err);
+          return console.log('Error on write: ', err.message);
+        }
+        console.log('SLM stopped.');
+        // port.close();
+        return callback();
+      });
+   },
+
+   portClose: function(callback) {
+      console.log('Closing Port');
+      port.close(null, function(err) {
+        if (err) {
+          callback(err);
+          return console.log('Error on write: ', err.message);
+        }
         port.close();
         return callback();
       });
    },
 
-   stop: function() {
-      console.log('Stopping SLM');
-      port.write(STOP_MEAS, function(err) {
-        if (err) {
-          return console.log('Error on write: ', err.message);
-        }
-        console.log('SLM stopped.');
-        return port.close();
-      });
-   },
-
-   logCM: function() {
+   logCM: function(callback) {
       console.log('Starting data logging of Custom Measures');
       let dataBuffer = [];
       function processHeaders(data) {
