@@ -26,6 +26,188 @@ const QUERY_CUSTOM_MEASURE = [[0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x30, 0x31, 0
                               [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x31, 0x33, 0x20, 0x3F, 0x03, 0x1B, 0x0D, 0x0A],
                               [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, 0x31, 0x34, 0x20, 0x3F, 0x03, 0x1C, 0x0D, 0x0A]];
 
+function getHex1(str)  {
+	var hexArr = [];
+	for (var n = 0, l = str.length; n < l; n ++)
+     {
+		var hex = Number(str.charCodeAt(n)).toString(16);
+      hexArr.push(parseInt(hex,16));
+	 }
+   return hexArr;
+};
+
+function getHex2(str)  {
+	var hexArr = [];
+	for (var n = 0, l = str.length; n < l; n ++)
+     {
+		var hex = Number(str.charCodeAt(n)).toString(16);
+    if (str.length === 1) {
+      hexArr.push(0x30);
+      hexArr.push(parseInt(hex,16));
+    } else {
+      hexArr.push(parseInt(hex,16));
+    }
+	 }
+   return hexArr;
+};
+
+function freqToHex(freqName) {
+switch (freqName) {
+  case 'A':
+    freqNumber = 0x30;
+    break;
+  case 'B':
+    freqNumber = 0x31;
+    break;
+  case 'C':
+    freqNumber = 0x32;
+    break;
+  case 'Z':
+    freqNumber = 0x33;
+    break;
+  default:
+    freqNumber = 0x30;
+}
+return freqNumber;
+};
+
+function freqFromHex(freqNumber) {
+switch (freqNumber) {
+  case 0:
+    freqName = 'LA';
+    break;
+  case 1:
+    freqName = 'LB';
+    break;
+  case 2:
+    freqName = 'LC';
+    break;
+  case 3:
+    freqName = 'LZ';
+    break;
+  default:
+    freqName = 'Error';
+}
+return freqName;
+};
+
+function detectorToHex(detectorName) {
+switch (detectorName) {
+  case 'F':
+    detectorNumber = 0x30;
+    break;
+  case 'S':
+    detectorNumber = 0x31;
+    break;
+  case 'I':
+    detectorNumber = 0x32;
+    break;
+  default:
+    detectorNumber = 0x30;
+}
+return detectorNumber;
+};
+
+function detectorFromHex(detectorNumber) {
+switch (detectorNumber) {
+  case 0:
+    detectorName = 'F';
+    break;
+  case 1:
+    detectorName = 'S';
+    break;
+  case 2:
+    detectorName = 'I';
+    break;
+  default:
+    detectorName = 'Error';
+}
+return detectorName;
+};
+
+function modeToHex(modeName) {
+  let modeNumber = {p1:'',p2:''};
+switch (modeName) {
+  case 'SPL':
+    modeNumber.p1 = 0x30;
+    modeNumber.p2 = 0x30;
+    break;
+  case 'sd':
+    modeNumber.p1 = 0x30;
+    modeNumber.p2 = 0x31;
+    break;
+  case 'sel':
+    modeNumber.p1 = 0x30;
+    modeNumber.p2 = 0x32;
+    break;
+  case 'e':
+    modeNumber.p1 = 0x30;
+    modeNumber.p2 = 0x33;
+    break;
+  case 'max':
+    modeNumber.p1 = 0x30;
+    modeNumber.p2 = 0x34;
+    break;
+  case 'min':
+    modeNumber.p1 = 0x30;
+    modeNumber.p2 = 0x35;
+    break;
+  case 'peak':
+    modeNumber.p1 = 0x30;
+    modeNumber.p2 = 0x36;
+    break;
+  case 'eq':
+    modeNumber.p1 = 0x30;
+    modeNumber.p2 = 0x37;
+    break;
+  case 'LN1':
+    modeNumber.p1 = 0x30;
+    modeNumber.p2 = 0x38;
+    break;
+  case 'LN2':
+    modeNumber.p1 = 0x30;
+    modeNumber.p2 = 0x39;
+    break;
+  case 'LN3':
+    modeNumber.p1 = 0x31;
+    modeNumber.p2 = 0x30;
+    break;
+  case 'LN4':
+    modeNumber.p1 = 0x31;
+    modeNumber.p2 = 0x31;
+    break;
+  case 'LN5':
+    modeNumber.p1 = 0x31;
+    modeNumber.p2 = 0x32;
+    break;
+  case 'LN6':
+    modeNumber.p1 = 0x31;
+    modeNumber.p2 = 0x33;
+    break;
+  case 'LN7':
+    modeNumber.p1 = 0x31;
+    modeNumber.p2 = 0x34;
+    break;
+  case 'LN8':
+    modeNumber.p1 = 0x31;
+    modeNumber.p2 = 0x35;
+    break;
+  case 'LN9':
+    modeNumber.p1 = 0x31;
+    modeNumber.p2 = 0x36;
+    break;
+  case 'LN10':
+    modeNumber.p1 = 0x31;
+    modeNumber.p2 = 0x37;
+    break;
+  default:
+    modeNumber.p1 = 0x30;
+    modeNumber.p2 = 0x30;
+}
+return modeNumber;
+};
+
+
 module.exports = {
 
   initialize: function(callback) {
@@ -83,40 +265,10 @@ module.exports = {
 
         statSettings = statsString.split(',').map(Number);
 
-        //translate frequency weightings
-        switch (statSettings[0]) {
-          case 0:
-            statSettings[0] = 'LA';
-            break;
-          case 1:
-            statSettings[0] = 'LB';
-            break;
-          case 2:
-            statSettings[0] = 'LC';
-            break;
-          case 3:
-            statSettings[0] = 'LZ';
-            break;
-          default:
-            statSettings[0] = 'Error';
-        }
+        //translate frequency weightings and detector
+        statSettings[0] = freqFromHex(statSettings[0]);
+        statSettings[1] = detectorFromHex(statSettings[1]);
 
-        //translate detector settings
-        switch (statSettings[1]) {
-          case 0:
-            statSettings[1] = 'F';
-            break;
-          case 1:
-            statSettings[1] = 'S';
-            break;
-          case 2:
-            statSettings[1] = 'I';
-            break;
-          default:
-            statSettings[1] = 'Error';
-        }
-
-        // console.log(statsArray);
         return statSettings;
       }
 
@@ -357,32 +509,31 @@ module.exports = {
    setCustomMeasures: function(callback) {
 
      //inputs to SLM
-           var customMeasureInput =  [{freq: "A", detector: "F", mode: "SPL"}, //group1
-                                     {freq: "B", detector: "S", mode: "sd"}, //group2
-                                     {freq: "C", detector: "I", mode: "sel"}, //group3
-                                     {freq: "Z", detector: "F", mode: "e"}, //group4
-                                     {freq: "A", detector: "S", mode: "max"}, //group5
-                                     {freq: "B", detector: "I", mode: "min"}, //group6
+           var customMeasureInput =  [{freq: "Z", detector: "S", mode: "peak"}, //group1
+                                     {freq: "Z", detector: "S", mode: "peak"}, //group2
+                                     {freq: "A", detector: "S", mode: "peak"}, //group3
+                                     {freq: "A", detector: "S", mode: "e"}, //group4
+                                     {freq: "A", detector: "S", mode: "peak"}, //group5
+                                     {freq: "B", detector: "I", mode: "peak"}, //group6
                                      {freq: "C", detector: "F", mode: "peak"}, //group7
-                                     {freq: "Z", detector: "S", mode: "eq"}, //group8
+                                     {freq: "Z", detector: "S", mode: "peak"}, //group8
                                      {freq: "A", detector: "I", mode: "LN1"}, //group9
                                      {freq: "B", detector: "F", mode: "LN2"}, //group10
                                      {freq: "C", detector: "S", mode: "LN3"}, //group11
                                      {freq: "Z", detector: "I", mode: "LN4"}, //group12
-                                     {freq: "A", detector: "F", mode: "LN5"}, //group13
-                                     {freq: "B", detector: "S", mode: "LN6"} //group14
+                                     {freq: "Z", detector: "F", mode: "LN5"}, //group13
+                                     {freq: "Z", detector: "S", mode: "LN6"} //group14
                                    ];
 
       console.log('Setting Custom Settings');
       let dataBuffer = [];
-      let thisGroupNumber = 0;
+      let thisGroupNumber = 1;
       var group_p1;
       var group_p2;
       var freq;
       var detector;
       var mode_p1;
       var mode_p2;
-
 
       function processData(data) {
         //Remove device id
@@ -407,188 +558,21 @@ module.exports = {
       //create command based on input settings
       function createCommand () {
 
-      switch (thisGroupNumber) {
-        case 0:
-          var group_p1 = 0x30;
-          var group_p2 = 0x31;
-          break;
-        case 1:
-          var group_p1 = 0x30;
-          var group_p2 = 0x32;
-          break;
-        case 2:
-          var group_p1 = 0x30;
-          var group_p2 = 0x33;
-          break;
-        case 3:
-          var group_p1 = 0x30;
-          var group_p2 = 0x34;
-          break;
-        case 4:
-          var group_p1 = 0x30;
-          var group_p2 = 0x35;
-          break;
-        case 5:
-          var group_p1 = 0x30;
-          var group_p2 = 0x36;
-          break;
-        case 6:
-          var group_p1 = 0x30;
-          var group_p2 = 0x37;
-          break;
-        case 7:
-          var group_p1 = 0x30;
-          var group_p2 = 0x38;
-          break;
-        case 8:
-          var group_p1 = 0x30;
-          var group_p2 = 0x39;
-          break;
-        case 9:
-          var group_p1 = 0x31;
-          var group_p2 = 0x30;
-          break;
-        case 10:
-          var group_p1 = 0x31;
-          var group_p2 = 0x31;
-          break;
-        case 11:
-          var group_p1 = 0x31;
-          var group_p2 = 0x32;
-          break;
-        case 12:
-          var group_p1 = 0x31;
-          var group_p2 = 0x33;
-          break;
-        case 13:
-          var group_p1 = 0x31;
-          var group_p2 = 0x34;
-          break;
-        default:
-          return console.log('Error');
-      }
+        group_p1 = getHex2(thisGroupNumber.toString())[0];
+        group_p2 = getHex2(thisGroupNumber.toString())[1];
+        freq = freqToHex(customMeasureInput[thisGroupNumber-1].freq);
+        detector = detectorToHex(customMeasureInput[thisGroupNumber-1].detector);
+        mode_p1 = modeToHex(customMeasureInput[thisGroupNumber-1].mode).p1;
+        mode_p2 = modeToHex(customMeasureInput[thisGroupNumber-1].mode).p2;
 
-
-      switch (customMeasureInput[thisGroupNumber].freq) {
-        case 'A':
-          var freq = 0x30;
-          break;
-        case 'B':
-          var freq = 0x31;
-          break;
-        case 'C':
-          var freq = 0x32;
-          break;
-        case 'Z':
-          var freq = 0x33;
-          break;
-        default:
-          var freq = 0x30;
-      }
-
-      switch (customMeasureInput[thisGroupNumber].detector) {
-        case 'F':
-          var detector = 0x30;
-          break;
-        case 'S':
-          var detector = 0x31;
-          break;
-        case 'I':
-          var detector = 0x32;
-          break;
-        default:
-          var detector = 0x30;
-      }
-
-      switch (customMeasureInput[thisGroupNumber].mode) {
-        case 'SPL':
-          var mode_p1 = 0x30;
-          var mode_p2 = 0x30;
-          break;
-        case 'sd':
-          var mode_p1 = 0x30;
-          var mode_p2 = 0x31;
-          break;
-        case 'sel':
-          var mode_p1 = 0x30;
-          var mode_p2 = 0x32;
-          break;
-        case 'e':
-          var mode_p1 = 0x30;
-          var mode_p2 = 0x33;
-          break;
-        case 'max':
-          var mode_p1 = 0x30;
-          var mode_p2 = 0x34;
-          break;
-        case 'min':
-          var mode_p1 = 0x30;
-          var mode_p2 = 0x35;
-          break;
-        case 'peak':
-          var mode_p1 = 0x30;
-          var mode_p2 = 0x36;
-          break;
-        case 'eq':
-          var mode_p1 = 0x30;
-          var mode_p2 = 0x37;
-          break;
-        case 'LN1':
-          var mode_p1 = 0x30;
-          var mode_p2 = 0x38;
-          break;
-        case 'LN2':
-          var mode_p1 = 0x30;
-          var mode_p2 = 0x39;
-          break;
-        case 'LN3':
-          var mode_p1 = 0x31;
-          var mode_p2 = 0x30;
-          break;
-        case 'LN4':
-          var mode_p1 = 0x31;
-          var mode_p2 = 0x31;
-          break;
-        case 'LN5':
-          var mode_p1 = 0x31;
-          var mode_p2 = 0x32;
-          break;
-        case 'LN6':
-          var mode_p1 = 0x31;
-          var mode_p2 = 0x33;
-          break;
-        case 'LN7':
-          var mode_p1 = 0x31;
-          var mode_p2 = 0x34;
-          break;
-        case 'LN8':
-          var mode_p1 = 0x31;
-          var mode_p2 = 0x35;
-          break;
-        case 'LN9':
-          var mode_p1 = 0x31;
-          var mode_p2 = 0x36;
-          break;
-        case 'LN10':
-          var mode_p1 = 0x31;
-          var mode_p2 = 0x37;
-          break;
-        default:
-          var mode_p1 = 0x30;
-          var mode_p2 = 0x30;
-      }
-
-      var SET_CUSTOM_MEASURE = [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, group_p1, group_p2, 0x20, freq, 0x20, detector, 0x20, mode_p1, mode_p2, 0x03, 0x00, 0x0D, 0x0A];
-
-      port.write(SET_CUSTOM_MEASURE, function(err) {
-        if (err) {
-          callback(err);
-          return console.log('Error on write: ', err.message);
-        }
-        console.log('Setting Custom Measure',thisGroupNumber+1);
-        console.log(customMeasureInput[thisGroupNumber]);
+        var SET_CUSTOM_MEASURE = [0x02, 0x01, 0x43, 0x43, 0x55, 0x53, group_p1, group_p2, 0x20, freq, 0x20, detector, 0x20, mode_p1, mode_p2, 0x03, 0x00, 0x0D, 0x0A];
+        port.write(SET_CUSTOM_MEASURE, function(err) {
+          if (err) {
+            callback(err);
+            return console.log('Error on write: ', err.message);
+          }
+          console.log('Setting Custom Measure',thisGroupNumber,customMeasureInput[thisGroupNumber-1]);
       })
-
     }
 
     let isReading = false;
@@ -616,9 +600,7 @@ module.exports = {
       }
 
     });
-
-  createCommand();
-
+    createCommand();
    },
 
    checkState: function(callback) {
@@ -679,6 +661,80 @@ module.exports = {
         console.log('Communicating with SLM');
       });
    },
+
+   setStats: function(callback) {
+      console.log('Setting statistical measures');
+      let dataBuffer = [];
+
+      //inputs to SLM
+      var statSettings = {freq:'A', detector:'F', LN1:'01', LN2:'05', LN3:'10', LN4:'50', LN5:'90', LN6:'95', LN7:'99', LN8:'80', LN9:'90', LN10:'99'};
+      var freq = freqToHex(statSettings.freq);
+      var LN1_p1 = getHex2(statSettings.LN1)[0];
+      console.log(statSettings);
+      var SET_STATS =  [0x02, 0x01, 0x43, 0x53, 0x54, 0x53,
+                        freq, 0x20, //freq
+                        detectorToHex(statSettings.detector), 0x20, //detector
+                        LN1_p1, getHex2(statSettings.LN1)[1], 0x20, //LN1
+                        getHex2(statSettings.LN2)[0], getHex2(statSettings.LN2)[1], 0x20, //LN2
+                        getHex2(statSettings.LN3)[0], getHex2(statSettings.LN3)[1], 0x20, //LN3
+                        getHex2(statSettings.LN4)[0], getHex2(statSettings.LN4)[1], 0x20, //LN4
+                        getHex2(statSettings.LN5)[0], getHex2(statSettings.LN5)[1], 0x20, //LN5
+                        getHex2(statSettings.LN6)[0], getHex2(statSettings.LN6)[1], 0x20, //LN6
+                        getHex2(statSettings.LN7)[0], getHex2(statSettings.LN7)[1], 0x20, //LN7
+                        getHex2(statSettings.LN8)[0], getHex2(statSettings.LN8)[1], 0x20, //LN8
+                        getHex2(statSettings.LN9)[0], getHex2(statSettings.LN9)[1], 0x20, //LN9
+                        getHex2(statSettings.LN10)[0], getHex2(statSettings.LN10)[1], //LN10
+                        0x03, 0x00, 0x0D, 0x0A];
+
+      function processData(data) {
+        //Remove device id
+        data.splice(0, 1);
+        //Remove the CR
+        data.splice(data.length-1, 1);
+        //Remove the BCC
+        data.splice(data.length-1, 1);
+        // Remove the ETX
+        data.splice(data.length-1, 1);
+        // Get the ATTR ATTR_RESPONSE
+        const command = data.splice(0, 1)[0];  //should be 0x41 which is the Response Block at start of Response data
+
+        let dataString = '';
+        for (var i = 0; i < data.length; i++) {
+          dataString += String.fromCharCode(data[i]);
+        }
+
+        var dataArray = dataString.split(',').map(Number);
+        return dataArray;
+      }
+
+      let isReading = false;
+      port.on('data', function (data) {
+        for (var i = 0; i < data.length; i++) {
+          let b = data[i];
+          if (isReading) {
+            if (b === 0x0A && dataBuffer[dataBuffer.length-1] === 0x0D && dataBuffer[dataBuffer.length-3] === 0x03) { //Check for ending signal
+              processData(dataBuffer);
+              isReading = false;
+              dataBuffer = [];
+              callback(null, null);
+            } else {
+              dataBuffer.push(b);
+            }
+          } else if (b === 0x02) {
+            isReading = true;
+          }
+        }
+
+      });
+
+      port.write(SET_STATS, function(err) {
+        if (err) {
+          return console.log('Error on write: ', err.message);
+        }
+        console.log('Communicating with SLM');
+      });
+   },
+
 
    start: function(callback) {
       console.log('Starting SLM');
