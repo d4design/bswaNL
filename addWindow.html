@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
     <title>Add Window</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 </head>
 <body>
-  <form>
-    <div>
-      <label>Label</label>
-      <input type="text" id="item" autofocus>
-    </div>
-    <button type="submit">Submit</button>
-  </form>
-
+  <div class="container">
+    <form>
+      <div>
+        <label>Enter Item</label>
+        <input type="text" id="item" autofocus>
+      </div>
+      <button class="btn waves-effect waves-light" type="submit">Submit</button>
+    </form>
+  </div>
   <script>
     const electron = require('electron');
     const {ipcRenderer} = electron;

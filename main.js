@@ -1,8 +1,17 @@
+// electron tutorial, up to 40mins https://www.youtube.com/watch?v=kN1Czs0m1SU
+
+
 const electron = require('electron');
 const url = require('url');
 const path = require('path');
+const async = require('async');
+const library = require('./library.js');
+const SerialPort = require('serialport');
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
+
+// Set Environment - remove to enable dev-tools
+//process.env.NODE_ENV = 'production';
 
 let mainWindow;
 let addWindow;
@@ -48,6 +57,20 @@ function createAddWindow(){
   });
 }
 
+//start logging
+function startLogging(){
+async.waterfall([
+  library.initialize,
+  library.logCM
+], (err) => {
+  if (err) {
+    console.log('Something errored', err);
+    return;
+  }
+  console.log('Done everything successfuly');
+})
+}
+
 // Catch item:add
 ipcMain.on('item:add', function(e, item){
   console.log(item);
@@ -58,7 +81,7 @@ ipcMain.on('item:add', function(e, item){
 // Create menu template
 const mainMenuTemplate = [
   {
-    label:'FIle',
+    label:'File',
     submenu:[
       {
         label: 'Add item to list',
@@ -70,6 +93,12 @@ const mainMenuTemplate = [
         label: 'Clear List',
         click(){
           mainWindow.webContents.send('item:clear');
+        }
+      },
+      {
+        label: 'Start Logging',
+        click(){
+          startLogging();
         }
       },
       {
