@@ -15,4 +15,4 @@ async.waterfall([
   }
   console.log('Done everything successfuly');
   library.portClose();
-})
+}) 

@@ -2,6 +2,8 @@
 
 ## Introduction
 
+I have had to stop working on this project as my company no longer uses BSWA sound level meters.  I will leave it here in case it helps someone.  I got to the point of being able to log noise levels from the meter to a CSV file, and update the settings on the device, plus other stuff.  I was working on creating an electron front end for the program, but didn't get far.  Have fun!
+
 This project aims to create an application for the control of the BSWA 308 and 309 sound level meters which allow control via RS232.  The BSWA manual has a list of possible commands.
 
 ## Setup
@@ -17,7 +19,17 @@ npm install
 ## Development
 All functions are stored in library.js and strung together with the following:
 
-To start logging noise levels of the Custom Measures to data.csv the command
+To get the current settings of the 14 custom measures in the BSWA
+```sh
+node getCustomMeasures.js
+```
+
+To set the 14 custom measures in the BSWA, settings are entered into the customMeasureInput variable in library.js:
+```sh
+node setCustomMeasures.js
+```
+
+To start logging noise levels of the Custom Measures to data.csv the command:
 ```sh
 node logCM.js
 ```
@@ -32,6 +44,10 @@ To get the Statistical Measure settings:
 node getStats.js
 ```
 
+To set the Statistical Measure settings, settings are entered into the statSettings variable in library.js:
+```sh
+node setStats.js
+```
 
 ## Notes
 

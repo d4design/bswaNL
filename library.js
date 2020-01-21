@@ -509,10 +509,10 @@ module.exports = {
    setCustomMeasures: function(callback) {
 
      //inputs to SLM
-           var customMeasureInput =  [{freq: "Z", detector: "S", mode: "peak"}, //group1
-                                     {freq: "Z", detector: "S", mode: "peak"}, //group2
-                                     {freq: "A", detector: "S", mode: "peak"}, //group3
-                                     {freq: "A", detector: "S", mode: "e"}, //group4
+           var customMeasureInput =  [{freq: "C", detector: "F", mode: "peak"}, //group1
+                                     {freq: "A", detector: "F", mode: "peak"}, //group2
+                                     {freq: "A", detector: "F", mode: "peak"}, //group3
+                                     {freq: "A", detector: "F", mode: "peak"}, //group4
                                      {freq: "A", detector: "S", mode: "peak"}, //group5
                                      {freq: "B", detector: "I", mode: "peak"}, //group6
                                      {freq: "C", detector: "F", mode: "peak"}, //group7
@@ -585,7 +585,7 @@ module.exports = {
             isReading = false;
             dataBuffer = [];
             thisGroupNumber++;
-            if (thisGroupNumber > 13) {
+            if (thisGroupNumber > 14) {
               console.log('Settings updated')
               callback(null, null);
             } else {
