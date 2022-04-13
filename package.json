@@ -12,7 +12,7 @@
   "author": "Matthew Dever",
   "license": "ISC",
   "dependencies": {
-    "async": "^3.1.0",
+    "async": "^3.2.2",
     "electron": "^6.0.2",
     "serialport": "^7.1.5"
   },
